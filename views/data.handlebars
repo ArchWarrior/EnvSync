@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data View</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .green {
+            color: green;
+        }
+    </style>
+</head>
+<body class="container pt-5">
+    <button onclick="deploy()" class="btn btn-primary mb-3">Deploy</button>
+    <button onclick="selectAll()" class="btn btn-secondary mb-3 ml-2">Select All</button>
+    <button onclick="unselectAll()" class="btn btn-secondary mb-3 ml-2">Unselect All</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Service</th>
+                <th>QA Build</th>
+                <th>Stress Build</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each data}}
+            <tr>
+                <td><span id="tick{{@index}}" class="green" style="display: none;">✔️</span><input type="checkbox" id="service{{@index}}"></td>
+                <td>{{this.service}}</td>
+                <td>{{this.qaBuild}}</td>
+                <td>{{this.stressBuild}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script>
+        function callApi(service, index) {
+        fetch('/api_endpoint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ service: service })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.success) {
+                document.getElementById('service' + index).checked = false;
+                document.getElementById('service' + index).style.display = 'none';
+                document.getElementById('tick' + index).style.display = 'inline';
+            }
+        });
+    }
+
+        function deploy() {
+            {{#each data}}
+            if (document.getElementById('service{{@index}}').checked) {
+                callApi('{{this.service}}', '{{@index}}');
+            }
+            {{/each}}
+        }
+
+        function selectAll() {
+            {{#each data}}
+            if (document.getElementById('service{{@index}}').style.display !== 'none') {
+                document.getElementById('service{{@index}}').checked = true;
+            }
+            {{/each}}
+        }
+
+        function unselectAll() {
+            {{#each data}}
+            if (document.getElementById('service{{@index}}').style.display !== 'none') {
+                document.getElementById('service{{@index}}').checked = false;
+            }
+            {{/each}}
+        }
+    </script>
+</body>
+</html>
